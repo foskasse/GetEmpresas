@@ -1,38 +1,26 @@
 <?php
-
-include_once("simple_html_dom.php");
-
-// se t target url to crawl
-$url = "https://www.einforma.pt/novas-empresas"; // change this
-
-// op en the web page
-$html = new simple_html_dom();
-$html->load_file($url);
-
-// array to store scraped links
-$links = array();
-
-// crawl the webpage for links
-foreach($html->find("a") as $link){
-    array_push($links, $link->href);
+function linkExtractor($html)
+{
+ $linkArray = array();
+ if(preg_match_all('/<a\s+.*?href=[\"\']?([^\"\' >]*)[\"\']?[^>]*>(.*?)<\/a>/i', $html, $matches, PREG_SET_ORDER)){
+  foreach ($matches as $match) {
+   array_push($linkArray, array($match[1], $match[2]));
+  }
+ }
+ return $linkArray;
 }
 
-// remove duplicates from the links array
-$links = array_unique($links);
-
-// set output headers to download file
-//header("Content-Type: text/csv; charset=utf-8");
-//header("Content-Disposition: attachment; filename=links.csv");
-
-// set file handler to output stream
-$output = fopen("php://output", "w");
-// output the scraped links
 
 
-$match = preg_grep('/servlet/app/portal/ENTP/prod/ETIQUETA_EMPRESA/nif/', $links)
-
-
-print_r ($match);
-
-//print_r($links);
+$url = 'https://www.einforma.pt/novas-empresas';   
+$ch = curl_init();
+curl_setopt($ch,CURLOPT_URL,$url);
+curl_setopt($ch,CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.12) Gecko/20080201 Firefox/2.0.0.12');
+curl_setopt($ch,CURLOPT_HEADER,0);
+curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
+curl_setopt($ch,CURLOPT_FOLLOWLOCATION,0);
+curl_setopt($ch,CURLOPT_TIMEOUT,120);
+$html = curl_exec($ch);
+curl_close($ch);
+echo '<pre>' . print_r(linkExtractor($html), true) . '<pre>';
 ?>

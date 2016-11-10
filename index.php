@@ -1,45 +1,47 @@
 <?php
 
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+include_once("simple_html_dom.php");
 
-function crawl_page($url, $depth = 5)
-{
-    static $seen = array();
-    if (isset($seen[$url]) || $depth === 0) {
-        return;
-    }
+// se t target url to crawl
+$url = "https://www.einforma.pt/novas-empresas"; // change this
 
-    $seen[$url] = true;
+// op en the web page
+$html = new simple_html_dom();
+$html->load_file($url);
 
-    $dom = new DOMDocument('1.0');
-    @$dom->loadHTMLFile($url);
+// array to store scraped links
+$links = array();
 
-    $anchors = $dom->getElementsByTagName('a');
-    foreach ($anchors as $element) {
-        $href = $element->getAttribute('href');
-        if (0 !== strpos($href, 'http')) {
-            $path = '/' . ltrim($href, '/');
-            if (extension_loaded('http')) {
-                $href = http_build_url($url, array('path' => $path));
-            } else {
-                $parts = parse_url($url);
-                $href = $parts['scheme'] . '://';
-                if (isset($parts['user']) && isset($parts['pass'])) {
-                    $href .= $parts['user'] . ':' . $parts['pass'] . '@';
-                }
-                $href .= $parts['host'];
-                if (isset($parts['port'])) {
-                    $href .= ':' . $parts['port'];
-                }
-                $href .= $path;
-            }
-        }
-        crawl_page($href, $depth - 1);
-    }
-    echo "URL:",$url,PHP_EOL,"CONTENT:",PHP_EOL,$dom->saveHTML(),PHP_EOL,PHP_EOL;
+// crawl the webpage for links
+foreach($html->find("a") as $link){
+    array_push($links, $link->href);
 }
-crawl_page("http://hobodave.com", 2);
+
+// remove duplicates from the links array
+$links = array_unique($links);
+
+// set output headers to download file
+//header("Content-Type: text/csv; charset=utf-8");
+//header("Content-Disposition: attachment; filename=links.csv");
+
+// set file handler to output stream
+$output = fopen("php://output", "w");
+// output the scraped links
+
+////$rest = substr("$links");
+function get_string_between($string, $start, $end){
+    $string = ' ' . $string;
+    $ini = strpos($string, $start);
+    if ($ini == 0) return '';
+    $ini += strlen($start);
+    $len = strpos($string, $end, $ini) - $ini;
+    return substr($string, $ini, $len);
+}
+
+
+
+
+//echo $parsed; // (result = dog)
+print_r($links);
+// fputcsv($output, $links, "\n");
+?>

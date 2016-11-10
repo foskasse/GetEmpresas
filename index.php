@@ -28,20 +28,11 @@ $links = array_unique($links);
 $output = fopen("php://output", "w");
 // output the scraped links
 
-////$rest = substr("$links");
-function get_string_between($string, $start, $end){
-    $string = ' ' . $string;
-    $ini = strpos($string, $start);
-    if ($ini == 0) return '';
-    $ini += strlen($start);
-    $len = strpos($string, $end, $ini) - $ini;
-    return substr($string, $ini, $len);
-}
+
+$match = preg_grep('/servlet/app/portal/ENTP/prod/ETIQUETA_EMPRESA/nif/', $links)
 
 
+print_r ($match);
 
-
-//echo $parsed; // (result = dog)
-print_r($links);
-// fputcsv($output, $links, "\n");
+//print_r($links);
 ?>
